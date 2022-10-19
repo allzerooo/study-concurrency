@@ -1,5 +1,7 @@
 package com.study.concurrency.threadsafety;
 
+import com.study.concurrency.annotation.NotThreadSafe;
+
 @NotThreadSafe
 public class UnsafeSequence {
 

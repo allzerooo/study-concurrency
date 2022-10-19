@@ -1,5 +1,8 @@
 package com.study.concurrency.threadsafety;
 
+import com.study.concurrency.annotation.GuardedBy;
+import com.study.concurrency.annotation.ThreadSafe;
+
 @ThreadSafe
 public class Sequence {
 
