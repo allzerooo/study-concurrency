@@ -16,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 class StockServiceTest {
 
 	@Autowired StockService stockService;
+	@Autowired PessimisticLockStockService pessimisticLockStockService;
 	@Autowired StockRepository stockRepository;
 
 	@BeforeEach
@@ -60,6 +61,31 @@ class StockServiceTest {
 		countDownLatch.await();
 	  
 	  // then
+		final Stock stock = stockRepository.findById(1L).orElseThrow();
+		assertThat(stock.getQuantity()).isEqualTo(0L);
+	}
+
+	@Test
+	void decreaseStockRequest100TimesWithPessimisticLock() throws InterruptedException {
+		// given
+		int threadCount = 100;
+		final ExecutorService executorService = Executors.newFixedThreadPool(32);
+		final CountDownLatch countDownLatch = new CountDownLatch(threadCount);
+
+		// when
+		for (int i = 0; i < threadCount; i++) {
+			executorService.submit(() -> {
+				try {
+					pessimisticLockStockService.decrease(1L, 1L);
+				} finally {
+					countDownLatch.countDown();
+				}
+			});
+		}
+
+		countDownLatch.await();
+
+		// then
 		final Stock stock = stockRepository.findById(1L).orElseThrow();
 		assertThat(stock.getQuantity()).isEqualTo(0L);
 	}
