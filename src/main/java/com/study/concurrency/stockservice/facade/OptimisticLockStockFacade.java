@@ -2,9 +2,10 @@ package com.study.concurrency.stockservice.facade;
 
 import com.study.concurrency.stockservice.domain.OptimisticLockStockService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-@Service
+@Component
 @RequiredArgsConstructor
 public class OptimisticLockStockFacade {
 

@@ -2,6 +2,7 @@ package com.study.concurrency.stockservice.domain;
 
 import static org.assertj.core.api.Assertions.*;
 
+import com.study.concurrency.stockservice.facade.NamedLockStockFacade;
 import com.study.concurrency.stockservice.facade.OptimisticLockStockFacade;
 import com.study.concurrency.stockservice.infrastructure.StockRepository;
 import java.util.concurrent.CountDownLatch;
@@ -19,6 +20,7 @@ class StockServiceTest {
 	@Autowired StockService stockService;
 	@Autowired PessimisticLockStockService pessimisticLockStockService;
 	@Autowired OptimisticLockStockFacade optimisticLockStockFacade;
+	@Autowired NamedLockStockFacade namedLockStockFacade;
 	@Autowired StockRepository stockRepository;
 
 	@BeforeEach
@@ -94,6 +96,33 @@ class StockServiceTest {
 
 	@Test
 	void decreaseStockRequest100TimesWithOptimisticLock() throws InterruptedException {
+		// given
+		int threadCount = 100;
+		final ExecutorService executorService = Executors.newFixedThreadPool(32);
+		final CountDownLatch countDownLatch = new CountDownLatch(threadCount);
+
+		// when
+		for (int i = 0; i < threadCount; i++) {
+			executorService.submit(() -> {
+				try {
+					optimisticLockStockFacade.decrease(1L, 1L);
+				} catch (InterruptedException e) {
+					throw new RuntimeException(e);
+				} finally {
+					countDownLatch.countDown();
+				}
+			});
+		}
+
+		countDownLatch.await();
+
+		// then
+		final Stock stock = stockRepository.findById(1L).orElseThrow();
+		assertThat(stock.getQuantity()).isEqualTo(0L);
+	}
+
+	@Test
+	void decreaseStockRequest100TimesWithNamedLock() throws InterruptedException {
 		// given
 		int threadCount = 100;
 		final ExecutorService executorService = Executors.newFixedThreadPool(32);
