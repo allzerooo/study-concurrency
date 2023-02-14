@@ -8,6 +8,8 @@ spring:
     username: root
     password: 1234
     driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 40 # NamedLock을 사용할 때 동일한 datasource로 테스트하기 때문에 늘려줌
 
 logging:
   level:
